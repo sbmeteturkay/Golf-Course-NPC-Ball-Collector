@@ -8,7 +8,7 @@ namespace Game.Feature.Entities
         [Header("Ball Properties")]
         [SerializeField] Rigidbody rigidBody;
         [Header("Ball Properties")]
-        [SerializeField] private int level = 1; // 1, 2, or 3
+        [SerializeField] private int level = 1;
 
         [SerializeField] private int pointValue = 10;
 
@@ -36,6 +36,21 @@ namespace Game.Feature.Entities
         public Vector3 WorldPosition()
         {
             return gameObject.transform.position;
+        }
+
+        public GameObject GameObject()
+        {
+            return gameObject;
+        }
+
+        int ICollectable.Level()
+        {
+            return level;
+        }
+
+        int ICollectable.PointValue()
+        {
+            return pointValue;
         }
     }
 }

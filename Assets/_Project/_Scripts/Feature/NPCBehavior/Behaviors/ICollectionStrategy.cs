@@ -13,5 +13,8 @@ namespace Game.Feature.Behaviors
         public void Collect(Transform parent);
         public void Drop();
         public Vector3 WorldPosition();
+        public GameObject GameObject();
+        public int Level();
+        public int PointValue();
     }
 }

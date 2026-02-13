@@ -1,3 +1,5 @@
+using Game.Feature.Behaviors;
+
 namespace Game.Core
 {
 using UnityEngine;
@@ -14,13 +16,18 @@ public class UIManager : MonoBehaviour
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI scoreText;
     [SerializeField] private TextMeshProUGUI healthText;
+    [SerializeField] private TextMeshProUGUI strategyText;
     [SerializeField] private Image healthSlider;
     [SerializeField] private Button exitButton;
     
     [Header("NPC References")]
     [SerializeField] private HealthSystem healthSystem;
     [SerializeField] private ScoreSystem scoreSystem;
+    [SerializeField] private NPCBrain npcBrain; //
     
+    private Color greedyColor = new Color(1f, 0.84f, 0f); // Altın sarısı
+    private Color balancedColor = new Color(0.2f, 0.8f, 1f); // Mavi
+    private Color safetyColor = new Color(1f, 0.3f, 0.3f); // Kırmızı
     private void OnEnable()
     {
         if (healthSystem != null)
@@ -32,6 +39,10 @@ public class UIManager : MonoBehaviour
         if (scoreSystem != null)
         {
             scoreSystem.OnScoreChanged += UpdateScoreDisplay;
+        }
+        if (npcBrain != null)
+        {
+            npcBrain.OnStrategyChanged += UpdateStrategyDisplay;
         }
     }
     
@@ -46,6 +57,10 @@ public class UIManager : MonoBehaviour
         if (scoreSystem != null)
         {
             scoreSystem.OnScoreChanged -= UpdateScoreDisplay;
+        }
+        if (npcBrain != null)
+        {
+            npcBrain.OnStrategyChanged -= UpdateStrategyDisplay;
         }
     }
     
@@ -88,7 +103,20 @@ public class UIManager : MonoBehaviour
         if (healthText != null)
             healthText.text = "Stopped";
     }
+    private void UpdateStrategyDisplay(string strategyName)
+    {
+        if (strategyText != null)
+        {
+            strategyText.text = $"Strategy: {strategyName}";
+            if (strategyName.Contains("Greedy"))
+                strategyText.color = greedyColor;
+            else if (strategyName.Contains("Safety"))
+                strategyText.color = safetyColor;
+            else
+                strategyText.color = balancedColor;
+        }
 
+    }
     private void Exit()
     {
         Application.Quit();
