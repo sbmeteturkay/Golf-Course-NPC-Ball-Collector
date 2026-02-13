@@ -6,6 +6,8 @@ namespace Game.Feature.Entities
     public class GolfBall : MonoBehaviour,ICollectable
     {
         [Header("Ball Properties")]
+        [SerializeField] Rigidbody rigidBody;
+        [Header("Ball Properties")]
         [SerializeField] private int level = 1; // 1, 2, or 3
 
         [SerializeField] private int pointValue = 10;
@@ -15,14 +17,20 @@ namespace Game.Feature.Entities
 
         private void OnValidate()
         {
-            // Auto-calculate points based on level
             pointValue = level * 10;
         }
 
-        public void Collect()
+        public void Collect(Transform itemHolder)
         {
-            // Play effect, sound, etc.
-            gameObject.SetActive(false);
+            rigidBody.isKinematic = true;
+            transform.SetParent(itemHolder);
+            rigidBody.transform.localPosition = Vector3.zero;
+        }
+
+        public void Drop()
+        {
+            gameObject.transform.parent = null;
+            rigidBody.isKinematic = false;
         }
 
         public Vector3 WorldPosition()

@@ -985,11 +985,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ball (5)
       objectReference: {fileID: 0}
-    - target: {fileID: 2428823926118412519, guid: 4565f8f685a117b49864cabc592f9b2b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5413497355931360726, guid: 4565f8f685a117b49864cabc592f9b2b,
         type: 3}
       propertyPath: m_RootOrder
@@ -2729,11 +2724,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Ball (2)
       objectReference: {fileID: 0}
-    - target: {fileID: 2428823926118412519, guid: 4565f8f685a117b49864cabc592f9b2b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5413497355931360726, guid: 4565f8f685a117b49864cabc592f9b2b,
         type: 3}
       propertyPath: m_RootOrder
@@ -3186,7 +3176,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1552213031}
-  m_LocalRotation: {x: 0.12967105, y: 0.9818562, z: -0.040648047, w: -0.13225536}
+  m_LocalRotation: {x: 0.12967105, y: 0.9818562, z: -0.04064804, w: -0.13225532}
   m_LocalPosition: {x: 4.31, y: 6.83, z: 7.56}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -3555,6 +3545,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 621440610786563597}
+        m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
+        m_MethodName: set_enabled
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 1
+        m_CallState: 2
 --- !u!114 &1594023913
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3860,11 +3862,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Ball (4)
-      objectReference: {fileID: 0}
-    - target: {fileID: 2428823926118412519, guid: 4565f8f685a117b49864cabc592f9b2b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5413497355931360726, guid: 4565f8f685a117b49864cabc592f9b2b,
         type: 3}
@@ -4569,11 +4566,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Ball (3)
-      objectReference: {fileID: 0}
-    - target: {fileID: 2428823926118412519, guid: 4565f8f685a117b49864cabc592f9b2b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5413497355931360726, guid: 4565f8f685a117b49864cabc592f9b2b,
         type: 3}
@@ -5291,6 +5283,18 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 621440610786563593}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &621440610786563597 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 621440610786563596, guid: 4df61bb421376204c8f9346919f88955,
+    type: 3}
+  m_PrefabInstance: {fileID: 621440610786563593}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1cad91ba7eb4c179f3b3a5c112ba0b8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &2860978756756002483
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5492,11 +5496,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Ball
-      objectReference: {fileID: 0}
-    - target: {fileID: 2428823926118412519, guid: 4565f8f685a117b49864cabc592f9b2b,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5413497355931360726, guid: 4565f8f685a117b49864cabc592f9b2b,
         type: 3}

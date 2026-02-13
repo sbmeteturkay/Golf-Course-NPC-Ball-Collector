@@ -10,7 +10,8 @@ namespace Game.Feature.Behaviors
 
     public interface ICollectable
     {
-        public void Collect();
+        public void Collect(Transform parent);
+        public void Drop();
         public Vector3 WorldPosition();
     }
 }
