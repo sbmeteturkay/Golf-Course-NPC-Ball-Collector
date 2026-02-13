@@ -926,7 +926,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6322736784679610557}
   m_Layer: 0
-  m_Name: GOLFCAR
+  m_Name: GolfCar
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
