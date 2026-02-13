@@ -1,4 +1,5 @@
 using Game.Feature.Behaviors;
+using UnityEngine.SceneManagement;
 
 namespace Game.Core
 {
@@ -19,6 +20,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI strategyText;
     [SerializeField] private Image healthSlider;
     [SerializeField] private Button exitButton;
+    [SerializeField] private Button restartButton;
     
     [Header("NPC References")]
     [SerializeField] private HealthSystem healthSystem;
@@ -81,6 +83,10 @@ public class UIManager : MonoBehaviour
         {
             exitButton.onClick.AddListener(Exit);
         }
+        if (restartButton!=null)
+        {
+            restartButton.onClick.AddListener(Restart);
+        }
     }
     
     private void UpdateHealthDisplay(float currentHealth)
@@ -110,7 +116,7 @@ public class UIManager : MonoBehaviour
             strategyText.text = $"Strategy: {strategyName}";
             if (strategyName.Contains("Greedy"))
                 strategyText.color = greedyColor;
-            else if (strategyName.Contains("Safety"))
+            else if (strategyName.Contains("Survival"))
                 strategyText.color = safetyColor;
             else
                 strategyText.color = balancedColor;
@@ -120,6 +126,10 @@ public class UIManager : MonoBehaviour
     private void Exit()
     {
         Application.Quit();
+    }
+    private void Restart()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
 }
