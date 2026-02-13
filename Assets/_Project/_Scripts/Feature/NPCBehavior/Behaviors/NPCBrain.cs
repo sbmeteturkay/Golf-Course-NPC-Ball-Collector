@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Game.Core;
 using Game.Feature.Entities;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Game.Feature.Behaviors
 {
@@ -11,10 +12,10 @@ namespace Game.Feature.Behaviors
         [SerializeField] private HealthSystem healthSystem;
         [SerializeField] private ScoreSystem scoreSystem;
         [SerializeField] private Transform golfCart;
+        [SerializeField] private NavMeshAgent agent;
     
         [Header("Settings")]
-        [SerializeField] private float searchRadius = 50f;
-        [SerializeField] private float collectionDistance = 2f;
+        [SerializeField] private float collectionDistance = 1.5f;
     
         private ICollectionStrategy currentStrategy;
         private GolfBall targetBall;
@@ -26,12 +27,21 @@ namespace Game.Feature.Behaviors
         private void Start()
         {
             currentStrategy = new ClosestStrategy();
+            
+            if (agent == null) agent = GetComponent<NavMeshAgent>();
+            
+            agent.stoppingDistance = collectionDistance; 
+
             FindAllBalls();
         }
     
         private void Update()
         {
-            if (!healthSystem.IsAlive) return;
+            if (!healthSystem.IsAlive) 
+            {
+                if (agent.enabled) agent.isStopped = true;
+                return;
+            }
         
             switch (currentState)
             {
@@ -55,15 +65,17 @@ namespace Game.Feature.Behaviors
     
         private void SearchForTargetBall()
         {
+            if (availableTargets.Count == 0) FindAllBalls();
+
             targetBall = currentStrategy.SelectTarget(availableTargets, transform.position, healthSystem.CurrentHealth) as GolfBall;
         
             if (targetBall != null)
             {
                 currentState = State.MovingToBall;
-                Debug.Log($"Target selected: {targetBall.name} (Level {targetBall.Level})");
+                agent.SetDestination(targetBall.transform.position);
             }
         }
-    
+
         private void MoveTowardsBall()
         {
             if (targetBall == null)
@@ -71,16 +83,15 @@ namespace Game.Feature.Behaviors
                 currentState = State.SearchingForBall;
                 return;
             }
-        
-            Vector3 direction = (targetBall.transform.position - transform.position).normalized;
-            transform.position += direction * 5f * Time.deltaTime;
-        
-            if (Vector3.Distance(transform.position, targetBall.transform.position) < collectionDistance)
+
+            agent.SetDestination(targetBall.transform.position);
+
+            if (!agent.pathPending && agent.remainingDistance <= agent.stoppingDistance)
             {
                 CollectBall(targetBall);
             }
         }
-    
+
         private void CollectBall(GolfBall ball)
         {
             scoreSystem.AddScore(ball.PointValue);
@@ -88,17 +99,27 @@ namespace Game.Feature.Behaviors
             ball.Collect();
         
             targetBall = null;
+            
             currentState = State.ReturningToCart;
+            if (golfCart != null)
+            {
+                agent.SetDestination(golfCart.position);
+            }
         }
     
         private void ReturnToCart()
         {
-            Vector3 direction = (golfCart.position - transform.position).normalized;
-            transform.position += direction * 5f * Time.deltaTime;
-        
-            if (Vector3.Distance(transform.position, golfCart.position) < 3f)
+            if (golfCart == null) 
             {
-                Debug.Log("Returned to cart!");
+                currentState = State.SearchingForBall;
+                return;
+            }
+
+            agent.SetDestination(golfCart.position);
+
+            if (!agent.pathPending && agent.remainingDistance <= 3f)
+            {
+                agent.ResetPath();
                 currentState = State.SearchingForBall;
             }
         }
