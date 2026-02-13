@@ -22,7 +22,7 @@ namespace Game.Feature.Entities
         public void Collect()
         {
             // Play effect, sound, etc.
-            Destroy(gameObject);
+            gameObject.SetActive(false);
         }
 
         public Vector3 WorldPosition()

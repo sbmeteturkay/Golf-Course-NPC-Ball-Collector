@@ -19,6 +19,7 @@ namespace Game.Feature.Behaviors
     
         private ICollectionStrategy currentStrategy;
         private GolfBall targetBall;
+        private GolfBall currentBall;
         private List<ICollectable> availableTargets = new();
     
         private enum State { SearchingForBall, MovingToBall, ReturningToCart }
@@ -94,10 +95,13 @@ namespace Game.Feature.Behaviors
 
         private void CollectBall(GolfBall ball)
         {
-            scoreSystem.AddScore(ball.PointValue);
+            if (ball)
+            {
+                currentBall = ball;
+            }
+            
             availableTargets.Remove(ball);
             ball.Collect();
-        
             targetBall = null;
             
             currentState = State.ReturningToCart;
@@ -119,6 +123,10 @@ namespace Game.Feature.Behaviors
 
             if (!agent.pathPending && agent.remainingDistance <= 3f)
             {
+                if (currentBall!=null)
+                {
+                    scoreSystem.AddScore(currentBall.PointValue);
+                }
                 agent.ResetPath();
                 currentState = State.SearchingForBall;
             }
