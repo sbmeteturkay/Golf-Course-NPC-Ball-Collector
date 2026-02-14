@@ -1,4 +1,5 @@
 using Game.Feature.Behaviors;
+using PrimeTween;
 using UnityEngine.SceneManagement;
 
 namespace Game.Core
@@ -102,6 +103,11 @@ public class UIManager : MonoBehaviour
     {
         if (scoreText != null)
             scoreText.text = $"Score: {score}";
+        Tween.PunchScale(scoreText.transform, strength: new Vector3(0.2f, 0.2f, 0), duration: 0.2f);
+        
+        Tween.Color(scoreText, endValue: Color.yellow, duration: 0.1f)
+            .Chain(Tween.Color(scoreText, endValue: Color.white, duration: 0.2f));
+
     }
     
     private void OnNPCDeath()
