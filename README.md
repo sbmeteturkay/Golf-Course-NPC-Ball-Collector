@@ -44,6 +44,7 @@ The NPC uses a **Strategy Pattern** to dynamically switch collection strategies 
 - **Interface-based design** (`ICollectable`, `ICollectionStrategy`)
 - **State machine** for NPC behavior management
 
+
 ## 🛠️ Technical Details
 
 - **Unity Version:** 2021.3.5f1
@@ -51,29 +52,8 @@ The NPC uses a **Strategy Pattern** to dynamically switch collection strategies 
 - **Pathfinding:** Unity NavMesh
 - **Architecture:** Clean architecture with separation of concerns
 
-### Project Structure
-```
-Assets/_Project/
-├── Scripts/
-│   ├── Core/
-│   │   ├── HealthSystem.cs
-│   │   ├── ScoreSystem.cs
-│   │   └── NPCBrain.cs
-│   ├── Behaviors/
-│   │   ├── ICollectionStrategy.cs
-│   │   ├── GreedyStrategy.cs
-│   │   ├── BalancedStrategy.cs
-│   │   └── SafetyFirstStrategy.cs
-│   ├── Entities/
-│   │   ├── GolfBall.cs
-│   │   └── ICollectable.cs
-│   └── Managers/
-│       └── UIManager.cs
-├── Scenes/
-├── Prefabs/
-└── Materials/
-```
-
+- _Project/: Contains only project-owned code and assets.
+- _Scripts/: Divided into Core and Feature layers.
 ## 🎯 Key Design Decisions
 
 ### Why Strategy Pattern?
@@ -97,7 +77,7 @@ Strategies switch automatically based on health thresholds:
 
 ### From Unity
 1. Open project in Unity 2021.3.5f1
-2. Open `Scenes/MainScene`
+2. Open `_Project/Scenes/Main`
 3. Press Play
 
 ### From Build
