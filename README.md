@@ -214,7 +214,6 @@ If safe zone empty:
 │    └─ UpdateStrategyDisplay() ← OnStrategyChanged   │
 └─────────────────────────────────────────────────────┘
 ```
-
 ### Key Architectural Benefits
 
 ✅ **Loose Coupling:** UI changes don't require game logic modifications
@@ -276,6 +275,42 @@ This separation follows **Clean Architecture** principles:
 - Features contain business logic
 - Clear dependency direction: Features → Core (never reverse)
 
+## 🏗️ Scene Hierarchy Structure
+
+The scene is organized into functional layers to ensure scalability and ease of navigation. This structure follows the "Separation of Concerns" principle, keeping environmental, logical, and dynamic elements in distinct containers.
+
+```
+Main (Scene)
+├── ⚙️ SceneSetup            # Global environment & configuration
+│   ├── Main Camera          # Primary viewpoint
+│   ├── Directional Light    # Global illumination
+│   ├── URP Volume Profile   # Post-processing & visual effects
+│   └── EventSystem          # Input handling for UI
+├── 🌿 Envo (Environment)    # Static world geometry
+│   ├── Terrain              # Ground mesh
+│   ├── Bridge               # Structural assets
+│   └── Water                # Environmental shaders
+├── 🖥️ UI (User Interface)   # Screen-space elements
+│   └── Canvas               # Main UI container
+│       ├── GameplayGUI      # HUD (Score, Health, Strategy)
+│       ├── StartPanel       # Initial landing state
+│       └── SettingsPanel    # Configuration options
+├── 🧠 Systems               # Logical controllers (Managers)
+│   ├── UIManager            # Bridges game events to UI updates
+│   ├── HealthSystem         # Manages NPC vitals & logic
+│   ├── ScoreSystem          # Tracks collection progress
+│   └── Camera               # Camera follow/utility logic
+└── 🤖 Entities              # Dynamic actors & objects
+    ├── GolfCart (Target)    # Delivery point & healing station
+    ├── NPC                  # Autonomous agent with AI Brain
+    └── Balls                # Collectible object container
+```
+Why This Structure?
+Logical Separation: Systems are decoupled from visuals, making it easier to swap environments without breaking the game logic.
+
+Performance: Grouping static objects under Envo simplifies Static Batching and Occlusion Culling management.
+
+Developer Experience: The organized hierarchy allows for instant navigation, crucial for maintaining clean projects during technical assessments.
 
 ---
 
