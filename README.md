@@ -1,7 +1,6 @@
 # Golf Course NPC Ball Collector
 
 Unity 3D demo showcasing AI decision-making for NPC ball collection with dynamic strategy switching.
-
 ## 🎮 Features
 
 ### Core Gameplay
@@ -9,6 +8,10 @@ Unity 3D demo showcasing AI decision-making for NPC ball collection with dynamic
 - Health system with regeneration at golf cart base
 - NavMesh-based pathfinding with obstacle avoidance
 - Score tracking and UI display
+  
+demo video: https://drive.google.com/file/d/1dZt2zutqZPxMmsbBm99USX4APtOVeQJ_/view?usp=sharing
+
+windows buildat : "Golf-Course-NPC-Ball-Collector\Build\Golf Course NPC Ball Collector.exe"
 
 ### Decision-Making System ⭐
 
