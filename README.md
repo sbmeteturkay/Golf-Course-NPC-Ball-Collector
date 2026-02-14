@@ -88,6 +88,8 @@ Strategies switch automatically based on health thresholds:
 2. Run `GolfBallCollector.exe` (Windows) or `.app` (macOS)
 3. Observe NPC behavior and UI strategy display
 
+windows build at : Golf-Course-NPC-Ball-Collector\Build\Golf Course NPC Ball Collector.exe
+
 ## 📊 Testing Variations
 
 Modify Inspector values to test different behaviors:
