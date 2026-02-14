@@ -229,8 +229,7 @@ If safe zone empty:
 - **Unity Version:** 2021.3.5f1
 - **Render Pipeline:** Universal Render Pipeline (URP)
 - **Pathfinding:** Unity NavMesh with runtime path validation
-- **Language:** C# 8.0 (pattern matching, null-coalescing)
-
+- **Animation:** PrimeTween for lightweight UI transitions
 ### Project Structure
 ```
 Assets/_Project/
