@@ -11,7 +11,7 @@ Unity 3D demo showcasing AI decision-making for NPC ball collection with dynamic
   
 demo video: https://drive.google.com/file/d/1dZt2zutqZPxMmsbBm99USX4APtOVeQJ_/view?usp=sharing
 
-windows buildat : "Golf-Course-NPC-Ball-Collector\Build\Golf Course NPC Ball Collector.exe"
+windows build at : Golf-Course-NPC-Ball-Collector\Build\Golf Course NPC Ball Collector.exe
 
 ### Decision-Making System ⭐
 
