@@ -10,7 +10,7 @@ namespace Game.Feature.Behaviors
 {
     public class NPCBrain : MonoBehaviour
     {
-        public event Action<string> OnStrategyChanged; // (strategyName)
+        public event Action<string> OnStrategyChanged;
 
         private static readonly int PickUp = Animator.StringToHash("PickUp");
         private static readonly int IsWalking = Animator.StringToHash("IsWalking");
@@ -18,60 +18,66 @@ namespace Game.Feature.Behaviors
 
         [Header("System References")]
         [SerializeField] private HealthSystem healthSystem;
+
         [SerializeField] private ScoreSystem scoreSystem;
         [SerializeField] private Transform golfCart;
-        
+
         [Header("References")]
         [SerializeField] private NavMeshAgent agent;
+
         [SerializeField] private Animator animator;
         [SerializeField] private Transform itemHolder;
-    
+
         [Header("Settings")]
         [SerializeField] private float collectionDistance = 1.5f;
+
         [SerializeField] private float searchCooldown = 0.5f;
-        
+
         [Header("Strategy Settings")]
         [SerializeField] private float greedyHealthThreshold = 70f;
+
         [SerializeField] private float safetyHealthThreshold = 30f;
         [SerializeField] private float healthRestoreAmount = 10f;
-    
-        // Strategy instances
+
         private ICollectionStrategy currentStrategy;
         private ICollectionStrategy greedyStrategy;
         private ICollectionStrategy balancedStrategy;
         private ICollectionStrategy safetyStrategy;
-        
-        // Target tracking
+
         private ICollectable targetCollectable;
         private ICollectable currentCollectable;
         private List<ICollectable> availableTargets = new();
-        
-        // Timing
+
         private float lastSearchTime;
-    
-        private enum State { SearchingForBall, MovingToBall, ReturningToCart }
+
+        private enum State
+        {
+            SearchingForBall,
+            MovingToBall,
+            ReturningToCart
+        }
+
         private State currentState = State.SearchingForBall;
-    
+
         private void Start()
         {
-            // Initialize strategies
             greedyStrategy = new GreedyStrategy();
             balancedStrategy = new BalancedStrategy(golfCart);
             safetyStrategy = new SafetyFirstStrategy(golfCart);
-            
-            currentStrategy = balancedStrategy; // Start with balanced
+
+            currentStrategy = balancedStrategy;
             string strategyName = GetStrategyDisplayName(currentStrategy);
             OnStrategyChanged?.Invoke(strategyName);
-            // Setup agent
+
             if (agent == null) agent = GetComponent<NavMeshAgent>();
             agent.stoppingDistance = collectionDistance;
 
             FindAllBalls();
         }
-    
+
         private void Update()
         {
-            if (!healthSystem.IsAlive) 
+            if (!healthSystem.IsAlive)
             {
                 if (agent.enabled) agent.isStopped = true;
                 animator.SetBool(IsWalking, false);
@@ -79,10 +85,9 @@ namespace Game.Feature.Behaviors
                 animator.ResetTrigger(PickUp);
                 return;
             }
-            
-            // Dynamic strategy switching based on health
+
             UpdateStrategy();
-        
+
             switch (currentState)
             {
                 case State.SearchingForBall:
@@ -96,16 +101,13 @@ namespace Game.Feature.Behaviors
                     break;
             }
         }
-        
-        /// <summary>
-        /// Dynamically switches strategy based on current health
-        /// </summary>
+
         private void UpdateStrategy()
         {
             float healthPercentage = (healthSystem.CurrentHealth / healthSystem.MaxHealth) * 100f;
-            
-            ICollectionStrategy newStrategy = null;
-            
+
+            ICollectionStrategy newStrategy;
+
             if (healthPercentage > greedyHealthThreshold)
             {
                 newStrategy = greedyStrategy;
@@ -118,18 +120,106 @@ namespace Game.Feature.Behaviors
             {
                 newStrategy = balancedStrategy;
             }
-            
-            // Log strategy change
+
             if (newStrategy != currentStrategy)
             {
-                string strategyName = GetStrategyDisplayName(newStrategy);
-                OnStrategyChanged?.Invoke(strategyName);
                 currentStrategy = newStrategy;
-                Debug.Log($"🔄 Strategy Changed: {currentStrategy.GetType().Name} (Health: {healthPercentage:F0}%)");
+
+                string strategyName = GetStrategyDisplayName(currentStrategy);
+                OnStrategyChanged?.Invoke(strategyName);
+
+                // ⭐ RE-EVALUATE when strategy changes mid-journey
+                if (currentState == State.MovingToBall && targetCollectable != null)
+                {
+                    ReEvaluateCurrentTarget();
+                }
+
+                Debug.Log($"🔄 Strategy Changed: {strategyName} (Health: {healthPercentage:F0}%)");
             }
         }
+
+        /// <summary>
+        /// Re-evaluates current target when strategy changes mid-journey
+        /// HYBRID: Only switches if critically necessary (emergency mode)
+        /// </summary>
+        private void ReEvaluateCurrentTarget()
+        {
+            // Calculate predicted health at current target completion
+            float predictedHealth = PredictHealthAtTargetCompletion(targetCollectable);
+
+            // CRITICAL CHECK: Will we survive this trip?
+            float criticalThreshold = 15f; // Below 15% health is critical
+
+            if (predictedHealth < criticalThreshold)
+            {
+                // EMERGENCY: Current target is suicidal
+                Debug.LogWarning($"⚠️ EMERGENCY! Predicted health ({predictedHealth:F0}) too low. Abandoning target.");
+
+                var newTarget = currentStrategy.SelectTarget(
+                    availableTargets,
+                    transform.position,
+                    healthSystem.CurrentHealth
+                );
+
+                if (newTarget != targetCollectable)
+                {
+                    Debug.Log(
+                        $"🔄 Emergency re-route: {targetCollectable?.GameObject().name} → {newTarget?.GameObject().name}");
+
+                    // Return old target to pool
+                    if (targetCollectable != null && !availableTargets.Contains(targetCollectable))
+                    {
+                        availableTargets.Add(targetCollectable);
+                    }
+
+                    targetCollectable = newTarget;
+
+                    if (targetCollectable != null)
+                    {
+                        agent.SetDestination(targetCollectable.WorldPosition());
+                    }
+                    else
+                    {
+                        // No safe option - return to cart immediately
+                        Debug.Log("🛡️ No safe target! Emergency return to cart.");
+                        currentState = State.ReturningToCart;
+                        if (golfCart != null)
+                        {
+                            agent.SetDestination(golfCart.position);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // NON-CRITICAL: Strategy changed but current target is still viable
+                Debug.Log($"✅ Strategy changed but committed to current target (Predicted HP: {predictedHealth:F0})");
+            }
+        }
+
+        /// <summary>
+        /// Predicts health after completing CURRENT target trip
+        /// </summary>
+        private float PredictHealthAtTargetCompletion(ICollectable target)
+        {
+            if (target == null) return 0f;
+
+            float healthDrainRate = 1f;
+            float averageSpeed = 3.5f;
+
+            // Distance: Current Position → Target → Cart
+            float distanceToTarget = Vector3.Distance(transform.position, target.WorldPosition());
+            float distanceToCart = Vector3.Distance(target.WorldPosition(), golfCart.position);
+            float totalDistance = distanceToTarget + distanceToCart;
+
+            float estimatedTime = totalDistance / averageSpeed;
+            float predictedLoss = estimatedTime * healthDrainRate;
+
+            return healthSystem.CurrentHealth - predictedLoss;
+        }
     
-        private void FindAllBalls()
+
+    private void FindAllBalls()
         {
             availableTargets.Clear();
             availableTargets.AddRange(FindObjectsOfType<GolfBall>());
@@ -137,12 +227,10 @@ namespace Game.Feature.Behaviors
     
         private void SearchForTargetBall()
         {
-            // Cooldown to avoid recalculating every frame
             if (Time.time - lastSearchTime < searchCooldown) return;
             lastSearchTime = Time.time;
             
             if (availableTargets.Count == 0) FindAllBalls();
-            
 
             targetCollectable = currentStrategy.SelectTarget(availableTargets, transform.position, healthSystem.CurrentHealth);
         
@@ -150,7 +238,7 @@ namespace Game.Feature.Behaviors
             {
                 currentState = State.MovingToBall;
                 agent.SetDestination(targetCollectable.WorldPosition());
-                Debug.Log("🎯 Target Selected: "+targetCollectable.GameObject().name+" Level: "+targetCollectable.Level()+" Points: "+targetCollectable.PointValue());
+                Debug.Log($"🎯 Target: {targetCollectable.GameObject().name} (Level {targetCollectable.Level()}, {targetCollectable.PointValue()} pts)");
             }
         }
 
@@ -164,11 +252,10 @@ namespace Game.Feature.Behaviors
                 return;
             }
 
-            // Validate NavMesh path
             NavMeshPath path = new NavMeshPath();
             if (!agent.CalculatePath(targetCollectable.WorldPosition(), path) || path.status == NavMeshPathStatus.PathInvalid)
             {
-                Debug.LogWarning($"⚠️ Cannot reach ball: {targetCollectable.GameObject().name}");
+                Debug.LogWarning($"⚠️ Cannot reach: {targetCollectable.GameObject().name}");
                 availableTargets.Remove(targetCollectable);
                 targetCollectable = null;
                 currentState = State.SearchingForBall;
@@ -198,7 +285,7 @@ namespace Game.Feature.Behaviors
             animator.ResetTrigger(PickUp);
             
             ball.Collect(itemHolder);
-            Debug.Log("✅ Collected:"+ball.GameObject().name+" "+ball.PointValue()+" points)");
+            Debug.Log($"✅ Collected: {ball.GameObject().name} (+{ball.PointValue()} pts)");
             
             yield return new WaitForSeconds(1f);
             
@@ -228,11 +315,9 @@ namespace Game.Feature.Behaviors
                 agent.isStopped = true;
                 agent.ResetPath();
                 
-                if (currentCollectable != null)
-                {
-                    animator.SetTrigger(Drop);
-                    scoreSystem.AddScore(currentCollectable.PointValue());
-                }
+                animator.SetTrigger(Drop);
+                scoreSystem.AddScore(currentCollectable.PointValue());
+                
                 StartCoroutine(DropAndSearch(currentCollectable));
                 currentCollectable = null;
             }
@@ -245,9 +330,8 @@ namespace Game.Feature.Behaviors
 
             ball.Drop();
             
-            // Restore health at cart
             healthSystem.RestoreHealth(healthRestoreAmount);
-            Debug.Log($"💚 Returned to cart! Health restored (+{healthRestoreAmount})");
+            Debug.Log($"💚 Health restored (+{healthRestoreAmount})");
             
             agent.isStopped = false;
             yield return new WaitForSeconds(.4f);

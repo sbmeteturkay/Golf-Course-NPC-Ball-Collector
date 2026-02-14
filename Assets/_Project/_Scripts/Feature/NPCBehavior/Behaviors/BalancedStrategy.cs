@@ -6,61 +6,83 @@ namespace Game.Feature.Behaviors
 {
     public class BalancedStrategy : ICollectionStrategy
     {
-        private Transform _dropPoint;
-
-        public BalancedStrategy(Transform dropPoint)
+        private Transform golfCartTransform;
+        private float healthDrainRate = 1f;
+        private float averageSpeed = 3.5f;
+        
+        public BalancedStrategy(Transform cartTransform)
         {
-            _dropPoint = dropPoint;
+            golfCartTransform = cartTransform;
         }
-
-        public ICollectable SelectTarget(List<ICollectable> availableBalls, Vector3 npcPosition, float currentHealth)
+        
+        public ICollectable SelectTarget(List<ICollectable> availableCollectables, Vector3 npcPosition, float currentHealth)
         {
-            if (availableBalls == null || availableBalls.Count == 0)
+            if (availableCollectables == null || availableCollectables.Count == 0)
                 return null;
-
-            var scoredBalls = availableBalls.Select(ball => new
+            
+            var scoredBalls = availableCollectables.Select(ball => new
             {
                 ball,
-                score = CalculateUtilityScore(ball, npcPosition, currentHealth)
-            }).ToList();
-
-            // Debug için en iyi 3'ü göster
-            var top3 = scoredBalls.OrderByDescending(x => x.score).Take(3);
-            foreach (var item in top3)
+                score = CalculateUtilityScore(ball, npcPosition, currentHealth),
+                predictedHealth = PredictHealthAtCompletion(ball, npcPosition, currentHealth)
+            })
+            .Where(x => x.score > 0 && x.predictedHealth > 0)
+            .ToList();
+            
+            if (scoredBalls.Count == 0) 
             {
-                var obj = item.ball.GameObject();
-                Debug.Log(
-                    "Ball "+obj.name+" Score="+item.score+"Level="+item.ball.Level() +"Distance="+Vector3.Distance(npcPosition, obj.transform.position));
+                Debug.LogWarning("⚠️ Balanced: No safe targets!");
+                return null;
             }
-
-            return scoredBalls
-                .OrderByDescending(x => x.score)
-                .FirstOrDefault()?.ball;
+            
+            var best = scoredBalls.OrderByDescending(x => x.score).First();
+            
+            Debug.Log($"🎯 Balanced: {best.ball.GameObject().name} | HP: {currentHealth:F0} → {best.predictedHealth:F0} | Utility: {best.score:F2}");
+            
+            return best.ball;
         }
-
-        private float CalculateUtilityScore(ICollectable collectable, Vector3 npcPosition, float currentHealth)
+        
+        /// <summary>
+        /// PREDICTIVE: Forecasts health at trip completion
+        /// </summary>
+        private float PredictHealthAtCompletion(ICollectable ball, Vector3 npcPosition, float currentHealth)
         {
-            // Mesafe hesapla
-            float distanceToBall = Vector3.Distance(npcPosition, collectable.GameObject().transform.position);
-            float distanceToCart = Vector3.Distance(collectable.GameObject().transform.position, _dropPoint.position);
+            float distanceToBall = Vector3.Distance(npcPosition, ball.WorldPosition());
+            float distanceToCart = Vector3.Distance(ball.WorldPosition(), golfCartTransform.position);
             float totalDistance = distanceToBall + distanceToCart;
-
-            // Health cost (her 1 birim mesafe = 0.5 health)
-            float healthCostRate = 0.5f;
-            float estimatedHealthCost = totalDistance * healthCostRate;
-
-            // Can bu yolculuğu karşılayabilir mi?
+            
+            float estimatedTime = totalDistance / averageSpeed;
+            float predictedHealthLoss = estimatedTime * healthDrainRate;
+            
+            return currentHealth - predictedHealthLoss;
+        }
+        
+        private float CalculateUtilityScore(ICollectable ball, Vector3 npcPosition, float currentHealth)
+        {
+            float distanceToBall = Vector3.Distance(npcPosition, ball.WorldPosition());
+            float distanceToCart = Vector3.Distance(ball.WorldPosition(), golfCartTransform.position);
+            float totalDistance = distanceToBall + distanceToCart;
+            
+            float estimatedTime = totalDistance / averageSpeed;
+            float estimatedHealthCost = estimatedTime * healthDrainRate;
+            
             if (estimatedHealthCost >= currentHealth)
             {
-                return -1000f; // İmkansız, bu topu seçme
+                return -1f;
             }
-
-            // Utility = (Kazanılan Puan) / (Harcanan Health + Mesafe Maliyeti)
-            float pointValue = collectable.PointValue();
-            float healthMultiplier = currentHealth / 100f; // Düşük canda daha temkinli
-
-            float utilityScore = (pointValue * healthMultiplier) / (estimatedHealthCost + 1f);
-
+            
+            // Safety margin: 20% health minimum
+            float safetyMargin = 20f;
+            float finalHealth = currentHealth - estimatedHealthCost;
+            
+            if (finalHealth < safetyMargin)
+            {
+                return -1f;
+            }
+            
+            float healthMultiplier = currentHealth / 100f;
+            float utilityScore = (ball.PointValue() * healthMultiplier) / (estimatedHealthCost + 1f);
+            
             return utilityScore;
         }
     }

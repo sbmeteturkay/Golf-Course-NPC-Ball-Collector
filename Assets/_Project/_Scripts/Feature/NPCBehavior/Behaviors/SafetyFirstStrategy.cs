@@ -1,42 +1,48 @@
 using System.Collections.Generic;
 using System.Linq;
-using Game.Feature.Entities;
 using UnityEngine;
 
 namespace Game.Feature.Behaviors
 {
-    public class SafetyFirstStrategy:ICollectionStrategy
+    public class SafetyFirstStrategy : ICollectionStrategy
     {
-        private Transform _dropPoint;
-        private float maxSafeDistance = 10f; // Cart'a 10 birim yakın toplar
-    
-        public SafetyFirstStrategy(Transform dropPoint)
+        private Transform golfCartTransform;
+        private float maxSafeDistance = 15f;
+        
+        public SafetyFirstStrategy(Transform cartTransform)
         {
-            _dropPoint = dropPoint;
+            golfCartTransform = cartTransform;
         }
-    
+        
         public ICollectable SelectTarget(List<ICollectable> availableCollectables, Vector3 npcPosition, float currentHealth)
         {
             if (availableCollectables == null || availableCollectables.Count == 0)
                 return null;
-        
-            // Sadece cart'a yakın topları seç
+            
             var safeBalls = availableCollectables
-                .Where(collectable => Vector3.Distance(collectable.WorldPosition(), _dropPoint.position) < maxSafeDistance)
+                .Where(ball => Vector3.Distance(ball.WorldPosition(), golfCartTransform.position) < maxSafeDistance)
                 .ToList();
-        
+            
             if (safeBalls.Count == 0)
             {
-                // Güvenli top yoksa, en yakın topu al
+                Debug.LogWarning("🛡️ Safety: No safe balls! Fallback to closest.");
+                
                 return availableCollectables
-                    .OrderBy(collectable => Vector3.Distance(npcPosition, collectable.WorldPosition()))
+                    .OrderBy(ball => Vector3.Distance(npcPosition, ball.WorldPosition()))
                     .FirstOrDefault();
             }
-        
-            // Güvenli toplar içinde en yakınını seç
-            return safeBalls
-                .OrderBy(collectable => Vector3.Distance(npcPosition, collectable.WorldPosition()))
+            
+            var target = safeBalls
+                .OrderBy(ball => Vector3.Distance(npcPosition, ball.WorldPosition()))
                 .FirstOrDefault();
+            
+            if (target != null)
+            {
+                float distToCart = Vector3.Distance(target.WorldPosition(), golfCartTransform.position);
+                Debug.Log($"🛡️ Safety: {target.GameObject().name} ({distToCart:F1}m from cart)");
+            }
+            
+            return target;
         }
     }
 }
