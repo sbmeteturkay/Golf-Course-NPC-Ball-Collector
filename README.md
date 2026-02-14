@@ -12,7 +12,7 @@ Unity 3D demo showcasing **predictive AI decision-making** with dynamic strategy
 
 **Demo Video:** [Watch Gameplay](https://drive.google.com/file/d/1dZt2zutqZPxMmsbBm99USX4APtOVeQJ_/view?usp=sharing)
 
-**Windows Build:** `Golf-Course-NPC-Ball-Collector\Build\Golf Course NPC Ball Collector.exe`
+**Windows Build:** Extract `Build.zip` and run `Golf Course NPC Ball Collector.exe`
 
 ---
 
@@ -390,9 +390,10 @@ Where:
     - NPC behavior: Target selection, emergency overrides
 
 ### From Build
-1. Navigate to: `Golf-Course-NPC-Ball-Collector\Build\`
-2. Run `Golf Course NPC Ball Collector.exe` (Windows)
-3. Watch autonomous NPC behavior
+1. Extract `Build.zip`
+2. Navigate to: `Build\`
+3. Run `Golf Course NPC Ball Collector.exe` (Windows)
+4. Watch autonomous NPC behavior
 
 ---
 
